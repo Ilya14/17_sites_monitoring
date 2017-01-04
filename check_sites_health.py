@@ -4,37 +4,39 @@ import datetime
 import argparse
 
 
-def load_urls4check(path):
-    try:
-        with open(path) as file:
-            for url in file.readlines():
-                yield url.strip()
-    except FileNotFoundError:
-        print('File "{0}" is not found.'.format(path))
+def load_urls4check(url_file):
+    with url_file:
+        for url in url_file.readlines():
+            yield url.strip()
 
 
 def is_server_respond_with_200(url):
     status_code = requests.get(url).status_code
-    return True if status_code == 200 else False
+    return status_code == requests.codes.ok
 
 
 def get_domain_expiration_date(domain_name):
     whois_domain = whois.whois(domain_name)
     expiration_date = whois_domain.expiration_date
-    return expiration_date.date()
+    if type(expiration_date) is list:
+        return expiration_date[0].date()
+    else:
+        return expiration_date.date()
 
 
 def is_domain_expiration_date_valid(expiration_date):
     days_count = 30
-    today = datetime.date.today()
-    month = datetime.timedelta(days=days_count)
-    month_ahead = today + month
-    return True if expiration_date >= month_ahead else False
+    days_count_before_expiration_date = (expiration_date - datetime.datetime.now().date()).days
+    return days_count_before_expiration_date > days_count
 
 
 def get_input_data():
     parser = argparse.ArgumentParser(description='Script for sites monitoring')
-    parser.add_argument('url_file', help='Text file with URL addresses for check')
+    parser.add_argument(
+        'url_file',
+        type=argparse.FileType(),
+        help='Text file with URL addresses for check'
+    )
     return parser.parse_args()
 
 
@@ -44,13 +46,27 @@ if __name__ == '__main__':
     urls = list(load_urls4check(args.url_file))
 
     for num, url in enumerate(urls):
+        server_status = is_server_respond_with_200(url)
         expiration_date = get_domain_expiration_date(url)
-        print(
-            '{0} URL: {1}; STATUS 200: {2}; EXPIRATION DATE: {3} (VALID: {4})'.format(
-                num + 1,
-                url,
-                'OK' if is_server_respond_with_200(url) else 'NO',
-                expiration_date,
-                'OK' if is_domain_expiration_date_valid(expiration_date) else 'NO',
+        expiration_date_status = is_domain_expiration_date_valid(expiration_date)
+
+        if server_status and expiration_date_status:
+            print('{0} URL: {1}; STATUS: OK'.format(num + 1, url))
+        elif not server_status and expiration_date_status:
+            print('{0} URL: {1}; STATUS: NO (status 200 error)'.format(num + 1, url))
+        elif server_status and not expiration_date_status:
+            print(
+                '{0} URL: {1}; STATUS: NO (expiration date "{2}" is less, than in a month)'.format(
+                    num + 1,
+                    url,
+                    expiration_date
+                )
             )
-        )
+        elif not server_status and not expiration_date_status:
+            print(
+                '{0} URL: {1}; STATUS: NO (status 200 error; expiration date "{2}" is less, than in a month)'.format(
+                    num + 1,
+                    url,
+                    expiration_date
+                )
+            )

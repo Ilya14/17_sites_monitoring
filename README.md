@@ -40,8 +40,9 @@ optional arguments:
 
 ```sh
 $ python3.5 ./check_sites_health.py ./sites.txt
-1 URL: http://www.bmstu.ru/; STATUS 200: OK; EXPIRATION DATE: 2017-10-01 (VALID: OK)
-2 URL: https://ru.wikipedia.org; STATUS 200: OK; EXPIRATION DATE: 2023-01-13 (VALID: OK)
-3 URL: https://vk.com; STATUS 200: OK; EXPIRATION DATE: 2017-06-23 (VALID: OK)
-4 URL: http://www.translate.ru/; STATUS 200: OK; EXPIRATION DATE: 2017-04-01 (VALID: OK)
+1 URL: http://www.bmstu.ru/; STATUS: OK
+2 URL: https://ru.wikipedia.org; STATUS: OK
+3 URL: https://vk.com; STATUS: OK
+4 URL: http://www.translate.ru/; STATUS: OK
+5 URL: https://devman.org; STATUS: OK
 ```
