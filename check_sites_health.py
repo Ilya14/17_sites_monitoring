@@ -40,6 +40,29 @@ def get_input_data():
     return parser.parse_args()
 
 
+def print_site_status(server_status, expiration_date_status, expiration_date):
+    if server_status and expiration_date_status:
+        print('{0} URL: {1}; STATUS: OK'.format(num + 1, url))
+    elif not server_status and expiration_date_status:
+        print('{0} URL: {1}; STATUS: NO (status 200 error)'.format(num + 1, url))
+    elif server_status and not expiration_date_status:
+        print(
+            '{0} URL: {1}; STATUS: NO (expiration date "{2}" is less, than in a month)'.format(
+                num + 1,
+                url,
+                expiration_date
+            )
+        )
+    elif not server_status and not expiration_date_status:
+        print(
+            '{0} URL: {1}; STATUS: NO (status 200 error; expiration date "{2}" is less, than in a month)'.format(
+                num + 1,
+                url,
+                expiration_date
+            )
+        )
+
+
 if __name__ == '__main__':
     args = get_input_data()
 
@@ -49,24 +72,4 @@ if __name__ == '__main__':
         server_status = is_server_respond_with_200(url)
         expiration_date = get_domain_expiration_date(url)
         expiration_date_status = is_domain_expiration_date_valid(expiration_date)
-
-        if server_status and expiration_date_status:
-            print('{0} URL: {1}; STATUS: OK'.format(num + 1, url))
-        elif not server_status and expiration_date_status:
-            print('{0} URL: {1}; STATUS: NO (status 200 error)'.format(num + 1, url))
-        elif server_status and not expiration_date_status:
-            print(
-                '{0} URL: {1}; STATUS: NO (expiration date "{2}" is less, than in a month)'.format(
-                    num + 1,
-                    url,
-                    expiration_date
-                )
-            )
-        elif not server_status and not expiration_date_status:
-            print(
-                '{0} URL: {1}; STATUS: NO (status 200 error; expiration date "{2}" is less, than in a month)'.format(
-                    num + 1,
-                    url,
-                    expiration_date
-                )
-            )
+        print_site_status(server_status, expiration_date_status, expiration_date)
